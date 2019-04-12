@@ -1,5 +1,5 @@
 {
-  "name": "tasoft/php-template",
+  "name": "tasoft/event-manager",
   "license": "MIT",
   "authors": [
     {
@@ -9,7 +9,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "TASoft\\..." : "src"
+      "TASoft\\EventManager\\" : "src"
     }
   },
   "require" : {
