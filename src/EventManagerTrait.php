@@ -23,6 +23,7 @@
 
 namespace TASoft\EventManager;
 
+use TASoft\Collection\PriorityCollection;
 use TASoft\EventManager\Event\Event;
 use TASoft\EventManager\Event\EventInterface;
 
@@ -32,6 +33,9 @@ use TASoft\EventManager\Event\EventInterface;
  */
 trait EventManagerTrait
 {
+    /**
+     * @var PriorityCollection[]
+     */
     private $listeners = [];
 
     /**
@@ -44,15 +48,9 @@ trait EventManagerTrait
      */
     public function addListener(string $eventName, callable $listener, int $priority = 0) {
         if(!isset($this->listeners[$eventName])) {
-            $this->listeners[$eventName] = [
-                true,
-                [$priority],
-                [$listener]
-            ];
+            $this->listeners[$eventName] = new PriorityCollection($priority, [$listener]);
         } else {
-            $this->listeners[$eventName][0] = false;
-            $this->listeners[$eventName][1][] = $priority;
-            $this->listeners[$eventName][2][] = $listener;
+            $this->listeners[$eventName]->add($priority, $listener);
         }
     }
 
@@ -64,8 +62,8 @@ trait EventManagerTrait
      * @param int $priority
      */
     public function addOnce(string $eventName, callable $listener, int $priority = 0) {
-        $l = function($eventName, $event, $manager, ...$arguments) use ($listener) {
-            $this->removeListener($listener, $eventName);
+        $l = function($eventName, $event, $manager, ...$arguments) use ($listener, &$l) {
+            $this->removeListener($l, $eventName);
             call_user_func($listener, $eventName, $event, $manager, ...$arguments);
         };
         $this->addListener($eventName, $l, $priority);
@@ -79,17 +77,14 @@ trait EventManagerTrait
      * @param string|NULL $eventName
      */
     public function removeListener($listener, string $eventName = NULL) {
-        $filter = function ($V) use ($listener) {
-            return ($V[2] != $listener) ? true : false;
-        };
-
         if($eventName) {
             if($list = $this->listeners[$eventName] ?? NULL) {
-                $this->listeners[$eventName] = array_filter($list, $filter);
+                $list->remove($listener);
             }
         } else {
-            foreach($this->listeners as &$list)
-                $list = array_filter($list, $filter);
+            foreach($this->listeners as &$list) {
+                $list->remove($listener);
+            }
         }
     }
 
@@ -119,12 +114,7 @@ trait EventManagerTrait
             return [];
         }
 
-        if (!$this->listeners[$eventName][0]) {
-            array_multisort($this->listeners[$eventName][1], SORT_NUMERIC, $this->listeners[$eventName][2]);
-            $this->listeners[$eventName][0] = true;
-        }
-
-        return $this->listeners[$eventName][2];
+        return $this->listeners[$eventName]->getOrderedElements();
     }
 
     /**
