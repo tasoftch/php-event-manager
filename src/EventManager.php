@@ -26,5 +26,5 @@ namespace TASoft\EventManager;
 
 class EventManager
 {
-
+    use EventManagerTrait;
 }

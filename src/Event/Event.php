@@ -24,25 +24,28 @@
 namespace TASoft\EventManager\Event;
 
 /**
- * Event object that can be passed to the event manager on trigger events
+ * Simple event class that can be triggered by the event manager.
+ * Basically it makes sense to create own events to let your plugins or package interact with your application
  *
  * @package TASoft\EventManager\Event
  */
-interface EventInterface
+class Event implements EventInterface
 {
-    /**
-     * Marks an event propagation as stopped.
-     * The event manager will break the listener chain and return
-     *
-     * @return void
-     * @see EventInterface::isPropagationStopped()
-     */
-    public function stopPropagation();
+    private $propagationStopped = false;
 
     /**
-     * MUST return true, if the event propagation was stopped during calling a listener.
-     * @return bool
-     * @see EventInterface::stopPropagation()
+     * @inheritDoc
      */
-    public function isPropagationStopped(): bool;
+    public function stopPropagation()
+    {
+        $this->propagationStopped = true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isPropagationStopped(): bool
+    {
+        return $this->propagationStopped;
+    }
 }

@@ -23,8 +23,131 @@
 
 namespace TASoft\EventManager;
 
+use TASoft\EventManager\Event\Event;
+use TASoft\EventManager\Event\EventInterface;
 
+/**
+ * Trait EventManagerTrait provides an event manager to every object that needs.
+ * @package TASoft\EventManager
+ */
 trait EventManagerTrait
 {
+    private $listeners = [];
 
+    /**
+     * Add a listener to the event manager.
+     * The lowest priority number will be called first.
+     *
+     * @param string $eventName
+     * @param callable $listener
+     * @param int $priority
+     */
+    public function addListener(string $eventName, callable $listener, int $priority = 0) {
+        if(!isset($this->listeners[$eventName])) {
+            $this->listeners[$eventName] = [
+                true,
+                [$priority],
+                [$listener]
+            ];
+        } else {
+            $this->listeners[$eventName][0] = false;
+            $this->listeners[$eventName][1][] = $priority;
+            $this->listeners[$eventName][2][] = $listener;
+        }
+    }
+
+    /**
+     * Add a listener to chain that listens only once
+     *
+     * @param string $eventName
+     * @param callable $listener
+     * @param int $priority
+     */
+    public function addOnce(string $eventName, callable $listener, int $priority = 0) {
+        $l = function($eventName, $event, $manager, ...$arguments) use ($listener) {
+            $this->removeListener($listener, $eventName);
+            call_user_func($listener, $eventName, $event, $manager, ...$arguments);
+        };
+        $this->addListener($eventName, $l, $priority);
+    }
+
+    /**
+     * Remove a listener from event manager.
+     * If eventName is specified, the listener is only removed from that event, otherwise from all events.
+     *
+     * @param $listener
+     * @param string|NULL $eventName
+     */
+    public function removeListener($listener, string $eventName = NULL) {
+        $filter = function ($V) use ($listener) {
+            return ($V[2] != $listener) ? true : false;
+        };
+
+        if($eventName) {
+            if($list = $this->listeners[$eventName] ?? NULL) {
+                $this->listeners[$eventName] = array_filter($list, $filter);
+            }
+        } else {
+            foreach($this->listeners as &$list)
+                $list = array_filter($list, $filter);
+        }
+    }
+
+    /**
+     * Remove all listeners.
+     * If eventName is specified, it removes only for that event, otherwise all.
+     *
+     * @param string|NULL $eventName
+     */
+    public function removeAllListeners(string $eventName = NULL) {
+        if($eventName) {
+            if(isset($this->listeners[$eventName]))
+                unset($this->listeners[$eventName]);
+        } else {
+            $this->listeners = [];
+        }
+    }
+
+    /**
+     * Sort the event listeners if needed and return them ordered.
+     *
+     * @param string $eventName
+     * @return array
+     */
+    public function getListeners(string $eventName): array {
+        if (!isset($this->listeners[$eventName])) {
+            return [];
+        }
+
+        if (!$this->listeners[$eventName][0]) {
+            array_multisort($this->listeners[$eventName][1], SORT_NUMERIC, $this->listeners[$eventName][2]);
+            $this->listeners[$eventName][0] = true;
+        }
+
+        return $this->listeners[$eventName][2];
+    }
+
+    /**
+     * Triggers an event and pass all listeners
+     *
+     * The trigger calls the following callback signature:
+     * function(string $eventName, EventInterface $event, $eventManager, ...$arguments)
+     *
+     * @param string $eventName
+     * @param EventInterface|NULL $event
+     * @param mixed $arguments
+     * @return EventInterface
+     */
+    public function trigger(string $eventName, EventInterface $event = NULL, ...$arguments): EventInterface {
+        if(!$event) {
+            $event = new Event();
+        }
+
+        foreach($this->getListeners($eventName) as $listener) {
+            call_user_func($listener, $eventName, $event, $this, ...$arguments);
+            if($event->isPropagationStopped())
+                break;
+        }
+        return $event;
+    }
 }
