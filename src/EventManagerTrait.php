@@ -45,6 +45,7 @@ trait EventManagerTrait
      * @param string $eventName
      * @param callable $listener
      * @param int $priority
+     * @return static
      */
     public function addListener(string $eventName, callable $listener, int $priority = 0) {
         if(!isset($this->listeners[$eventName])) {
@@ -52,6 +53,7 @@ trait EventManagerTrait
         } else {
             $this->listeners[$eventName]->add($priority, $listener);
         }
+        return $this;
     }
 
     /**
@@ -60,13 +62,14 @@ trait EventManagerTrait
      * @param string $eventName
      * @param callable $listener
      * @param int $priority
+     * @return static
      */
     public function addOnce(string $eventName, callable $listener, int $priority = 0) {
         $l = function($eventName, $event, $manager, ...$arguments) use ($listener, &$l) {
             $this->removeListener($l, $eventName);
             call_user_func($listener, $eventName, $event, $manager, ...$arguments);
         };
-        $this->addListener($eventName, $l, $priority);
+        return $this->addListener($eventName, $l, $priority);
     }
 
     /**
@@ -75,6 +78,7 @@ trait EventManagerTrait
      *
      * @param $listener
      * @param string|NULL $eventName
+     * @return static
      */
     public function removeListener($listener, string $eventName = NULL) {
         if($eventName) {
@@ -86,6 +90,7 @@ trait EventManagerTrait
                 $list->remove($listener);
             }
         }
+        return $this;
     }
 
     /**
@@ -93,6 +98,7 @@ trait EventManagerTrait
      * If eventName is specified, it removes only for that event, otherwise all.
      *
      * @param string|NULL $eventName
+     * @return static
      */
     public function removeAllListeners(string $eventName = NULL) {
         if($eventName) {
@@ -101,6 +107,7 @@ trait EventManagerTrait
         } else {
             $this->listeners = [];
         }
+        return $this;
     }
 
     /**

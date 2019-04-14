@@ -24,7 +24,7 @@
 namespace TASoft\EventManager;
 
 
-class EventManager
+class EventManager implements EventManagerInterface
 {
     use EventManagerTrait;
 }

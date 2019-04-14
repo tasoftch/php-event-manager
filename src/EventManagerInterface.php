@@ -21,19 +21,19 @@
  * SOFTWARE.
  */
 
-namespace TASoft\EventManager\Event;
-
-use TASoft\EventManager\EventManagerInterface;
+namespace TASoft\EventManager;
 
 /**
- * Interface EventSubscriberInterface lets a class itself decide which events it wants to listen for.
- * @package TASoft\EventManager\Event
+ * Interface EventManagerInterface
+ * @package TASoft\EventManager
  */
-interface EventSubscriberInterface
+interface EventManagerInterface
 {
     /**
-     * @param EventManagerInterface $eventManager
-     * @return void
+     * @param string $eventName
+     * @param callable $listener
+     * @param int $priority
+     * @return self
      */
-    public static function subscribe(EventManagerInterface $eventManager);
+    public function addListener(string $eventName, callable $listener, int $priority = 0);
 }
