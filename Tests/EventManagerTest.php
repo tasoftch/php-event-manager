@@ -31,6 +31,8 @@
 use PHPUnit\Framework\TestCase;
 use TASoft\EventManager\Event\EventInterface;
 use TASoft\EventManager\EventManager;
+use TASoft\EventManager\EventSubscriberInterface;
+use TASoft\EventManager\SubscribableEventManager;
 
 class EventManagerTest extends TestCase
 {
@@ -184,6 +186,16 @@ class EventManagerTest extends TestCase
         $this->assertEquals(-1, $m1->index);
         $this->assertGreaterThan(0, $m2->index);
     }
+
+    public function testSubscriber() {
+        $em = new SubscribableEventManager();
+
+        $this->assertTrue($em->subscribeClass(SubscriberClass::class));
+        $this->assertFalse(SubscriberClass::$hits);
+
+        $em->trigger("myEvent");
+        $this->assertTrue(SubscriberClass::$hits);
+    }
 }
 
 class TriggerMarker {
@@ -195,5 +207,20 @@ class TriggerMarker {
         $this->arguments = func_get_args();
         static $index = 0;
         $this->index = $index++;
+    }
+}
+
+class SubscriberClass implements EventSubscriberInterface {
+    public static $hits = false;
+
+    public static function getEventListeners(): array
+    {
+        return [
+            [13, 'myEvent', [self::class, 'doStuff']]
+        ];
+    }
+
+    public static function doStuff() {
+        self::$hits = true;
     }
 }
