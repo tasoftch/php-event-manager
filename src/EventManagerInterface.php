@@ -23,6 +23,8 @@
 
 namespace TASoft\EventManager;
 
+use TASoft\EventManager\Event\EventInterface;
+
 /**
  * Interface EventManagerInterface
  * @package TASoft\EventManager
@@ -36,4 +38,17 @@ interface EventManagerInterface
      * @return self
      */
     public function addListener(string $eventName, callable $listener, int $priority = 0);
+
+    /**
+     * Triggers an event and pass all listeners
+     *
+     * The trigger calls the following callback signature:
+     * function(string $eventName, EventInterface $event, $eventManager, ...$arguments)
+     *
+     * @param string $eventName
+     * @param EventInterface|NULL $event
+     * @param mixed $arguments
+     * @return EventInterface
+     */
+    public function trigger(string $eventName, EventInterface $event = NULL, ...$arguments): EventInterface;
 }
