@@ -26,5 +26,11 @@ namespace TASoft\EventManager;
 
 class EventManager implements EventManagerInterface
 {
+    const GLOBAL_EVENT_NAME = '';
     use EventManagerTrait;
+
+    public function __construct()
+    {
+        $this->allowGlobalEventListeners = true;
+    }
 }
