@@ -23,55 +23,25 @@
 
 namespace TASoft\EventManager\Listener;
 
+
 use TASoft\EventManager\Event\EventInterface;
-use TASoft\EventManager\EventManager;
 use TASoft\EventManager\EventManagerInterface;
 
 /**
- * This event listener is able to decide if it wants to handle the event or not.
+ * Interface to accept an object as event listener.
+ * You do not need to implement this interface, but you must define the __invoke method to get a valid event listener object
+ *
  * @package TASoft\EventManager\Listener
  */
-abstract class AbstractAwareListener implements EventNameAwareInterface, EventListenerInterface
+interface EventListenerInterface
 {
     /**
-     * If this listener is able to handle the triggered event, return a callable to forward the event. Otherwise return null
-     *
-     * @param string $eventName
-     * @param EventInterface $event
-     * @param EventManagerInterface $eventManager
-     * @param mixed ...$arguments
-     * @return callable|null
-     */
-    public abstract function acceptEvent(string $eventName, EventInterface $event, EventManagerInterface $eventManager, ...$arguments): ?callable;
-
-    /**
-     * Default implementation to forward an event to a designated handler
+     * Event listener implementation
      *
      * @param string $eventName
      * @param EventInterface $event
      * @param EventManagerInterface $eventManager
      * @param mixed ...$arguments
      */
-    public function __invoke(string $eventName, EventInterface $event, EventManagerInterface $eventManager, ...$arguments)
-    {
-        if($cbl = $this->acceptEvent($eventName, $event, $eventManager, ...$arguments)) {
-            call_user_func($cbl, $eventName, $event, $eventManager, ...$arguments);
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getEventName(): ?string
-    {
-        return EventManager::GLOBAL_EVENT_NAME;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPriority(): ?int
-    {
-        return NULL;
-    }
+    public function __invoke(string $eventName, EventInterface $event, EventManagerInterface $eventManager, ...$arguments);
 }
