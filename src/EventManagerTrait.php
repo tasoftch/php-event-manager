@@ -26,6 +26,7 @@ namespace TASoft\EventManager;
 use TASoft\Collection\PriorityCollection;
 use TASoft\EventManager\Event\Event;
 use TASoft\EventManager\Event\EventInterface;
+use TASoft\EventManager\Listener\EventNameAwareInterface;
 
 /**
  * Trait EventManagerTrait provides an event manager to every object that needs.
@@ -49,6 +50,11 @@ trait EventManagerTrait
      * @return static
      */
     public function addListener(string $eventName, callable $listener, int $priority = 0) {
+        if($listener instanceof EventNameAwareInterface) {
+            $eventName = $listener->getEventName();
+            $priority = $listener->getPriority();
+        }
+
         if(!isset($this->listeners[$eventName])) {
             $this->listeners[$eventName] = new PriorityCollection($priority, [$listener]);
         } else {
@@ -66,6 +72,11 @@ trait EventManagerTrait
      * @return static
      */
     public function addOnce(string $eventName, callable $listener, int $priority = 0) {
+        if($listener instanceof EventNameAwareInterface) {
+            $eventName = $listener->getEventName();
+            $priority = $listener->getPriority();
+        }
+
         $l = function($eventName, $event, $manager, ...$arguments) use ($listener, &$l) {
             $this->removeListener($l, $eventName);
             call_user_func($listener, $eventName, $event, $manager, ...$arguments);
