@@ -34,15 +34,15 @@ use TASoft\EventManager\EventManagerInterface;
 abstract class AbstractAwareListener implements EventNameAwareInterface, EventListenerInterface
 {
     /**
-     * If this listener is able to handle the triggered event, return a callable to forward the event. Otherwise return null
+     * If this listener is able to handle the triggered event, return a method name to forward the event. Otherwise return null
      *
      * @param string $eventName
      * @param EventInterface $event
      * @param EventManagerInterface $eventManager
      * @param mixed ...$arguments
-     * @return callable|null
+     * @return string|null
      */
-    public abstract function acceptEvent(string $eventName, EventInterface $event, EventManagerInterface $eventManager, ...$arguments): ?callable;
+    public abstract function acceptEvent(string $eventName, EventInterface $event, EventManagerInterface $eventManager, ...$arguments): ?string;
 
     /**
      * Default implementation to forward an event to a designated handler
@@ -54,8 +54,8 @@ abstract class AbstractAwareListener implements EventNameAwareInterface, EventLi
      */
     public function __invoke(string $eventName, EventInterface $event, EventManagerInterface $eventManager, ...$arguments)
     {
-        if($cbl = $this->acceptEvent($eventName, $event, $eventManager, ...$arguments)) {
-            call_user_func($cbl, $eventName, $event, $eventManager, ...$arguments);
+        if(is_string($cbl = $this->acceptEvent($eventName, $event, $eventManager, ...$arguments)) && method_exists($this, $cbl)) {
+            call_user_func([$this, $cbl], $eventName, $event, $eventManager, ...$arguments);
         }
     }
 

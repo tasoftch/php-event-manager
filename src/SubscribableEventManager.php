@@ -41,6 +41,8 @@ class SubscribableEventManager extends EventManager
      */
     public function __construct()
     {
+        parent::__construct();
+
         $this->subscriberHandlers = new PriorityCollection();
 
         // Add default subscriütion handler accepting: array( int <priority>, string <eventname>, callable <everything that call_user_func can handle>)
