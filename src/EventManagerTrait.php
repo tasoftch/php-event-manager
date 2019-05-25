@@ -36,7 +36,7 @@ trait EventManagerTrait
     /**
      * @var PriorityCollection[]
      */
-    private $listeners = [];
+    protected $listeners = [];
 
     /**
      * Add a listener to the event manager.
