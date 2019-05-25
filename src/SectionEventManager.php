@@ -87,4 +87,18 @@ class SectionEventManager implements EventManagerInterface
 
         return $this->_t_trigger($eventName, $event, ...$arguments);
     }
+
+    /**
+     * Lightweight method to declare section and event names separately
+     *
+     * @param string $sectionName
+     * @param string $eventName
+     * @param EventInterface|NULL $event
+     * @param mixed ...$arguments
+     * @return EventInterface
+     */
+    public function triggerSection(string $sectionName, string $eventName, EventInterface $event = NULL, ...$arguments): EventInterface {
+        $eventName = "$sectionName.$eventName";
+        return $this->trigger($eventName, $event, ...$arguments);
+    }
 }
