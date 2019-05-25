@@ -51,8 +51,8 @@ trait EventManagerTrait
      */
     public function addListener(string $eventName, callable $listener, int $priority = 0) {
         if($listener instanceof EventNameAwareInterface) {
-            $eventName = $listener->getEventName();
-            $priority = $listener->getPriority();
+            $eventName = !is_null($n = $listener->getEventName()) ? $n : $eventName;
+            $priority = !is_null($n = $listener->getPriority()) ? $n : $priority;
         }
 
         if(!isset($this->listeners[$eventName])) {
@@ -73,8 +73,8 @@ trait EventManagerTrait
      */
     public function addOnce(string $eventName, callable $listener, int $priority = 0) {
         if($listener instanceof EventNameAwareInterface) {
-            $eventName = $listener->getEventName();
-            $priority = $listener->getPriority();
+            $eventName = !is_null($n = $listener->getEventName()) ? $n : $eventName;
+            $priority = !is_null($n = $listener->getPriority()) ? $n : $priority;
         }
 
         $l = function($eventName, $event, $manager, ...$arguments) use ($listener, &$l) {

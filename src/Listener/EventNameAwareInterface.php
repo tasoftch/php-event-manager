@@ -31,13 +31,17 @@ interface EventNameAwareInterface
 {
     /**
      * Return the event name to listen for.
-     * @return string
+     * If returns null, the passed name is used
+     *
+     * @return string|null
      */
-    public function getEventName(): string;
+    public function getEventName(): ?string;
 
     /**
      * Return the priority for the listener.
-     * @return int
+     * If returns null, the passed priority is used.
+     *
+     * @return int|null
      */
-    public function getPriority(): int;
+    public function getPriority(): ?int;
 }
