@@ -37,6 +37,7 @@ trait EventManagerTrait
      * @var PriorityCollection[]
      */
     protected $listeners = [];
+    protected $allowGlobalEventListeners = false;
 
     /**
      * Add a listener to the event manager.
@@ -138,6 +139,13 @@ trait EventManagerTrait
     public function trigger(string $eventName, EventInterface $event = NULL, ...$arguments): EventInterface {
         if(!$event) {
             $event = new Event();
+        }
+        if($this->allowGlobalEventListeners) {
+            foreach($this->getListeners("") as $listener) {
+                call_user_func($listener, $eventName, $event, $this, ...$arguments);
+                if($event->isPropagationStopped())
+                    return $event;
+            }
         }
 
         foreach($this->getListeners($eventName) as $listener) {
