@@ -141,26 +141,38 @@ trait EventManagerTrait
      *
      * The trigger calls the following callback signature:
      * function(string $eventName, EventInterface $event, $eventManager, ...$arguments)
+     * Note that trigger("event", NULL, [$arg1, $arg2, &$arg3]) can be used also. In that case, arguments are forwarded by references. So if the called method uses func($eventName, $event, $manager, $arg1, $arg2, &$arg3) the $arg3 is still the reference.
      *
      * @param string $eventName
      * @param EventInterface|NULL $event
-     * @param mixed $arguments
+     * @param mixed[]|array $arguments
      * @return EventInterface
      */
     public function trigger(string $eventName, EventInterface $event = NULL, ...$arguments): EventInterface {
         if(!$event) {
             $event = new Event();
         }
+
+        $call = function($listener) use ($eventName, $event, $arguments) {
+            if(count($arguments) == 1 && is_array($arguments[0])) {
+                $args = [$eventName, $event, $this];
+                foreach($arguments[0] as &$value)
+                    $args[] =& $value;
+                call_user_func_array($listener, $args);
+            } else
+                call_user_func($listener, $eventName, $event, $this, ...$arguments);
+        };
+
         if($this->allowGlobalEventListeners) {
             foreach($this->getListeners("") as $listener) {
-                call_user_func($listener, $eventName, $event, $this, ...$arguments);
+                $call($listener);
                 if($event->isPropagationStopped())
                     return $event;
             }
         }
 
         foreach($this->getListeners($eventName) as $listener) {
-            call_user_func($listener, $eventName, $event, $this, ...$arguments);
+            $call($listener);
             if($event->isPropagationStopped())
                 break;
         }
