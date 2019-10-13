@@ -34,6 +34,8 @@ use TASoft\EventManager\Listener\EventNameAwareInterface;
  */
 trait EventManagerTrait
 {
+    protected static $eventStack = [];
+
     /**
      * @var PriorityCollection[]
      */
@@ -163,6 +165,8 @@ trait EventManagerTrait
                 call_user_func($listener, $eventName, $event, $this, ...$arguments);
         };
 
+        static::$eventStack[] = $event;
+
         if($this->allowGlobalEventListeners) {
             foreach($this->getListeners("") as $listener) {
                 $call($listener);
@@ -176,6 +180,13 @@ trait EventManagerTrait
             if($event->isPropagationStopped())
                 break;
         }
+
+        array_pop(static::$eventStack);
+
         return $event;
+    }
+
+    public static function getCurrentEvent(): ?EventInterface {
+        return end( static::$eventStack );
     }
 }
