@@ -13,10 +13,10 @@
     }
   },
   "require" : {
-    "php": "^7.2",
-    "tasoft/collection": "^1.0"
+    "php": ">=7.2",
+    "tasoft/collection": "^1|^8"
   },
   "require-dev": {
-    "phpunit/phpunit": "^6"
+    "phpunit/phpunit": "^9"
   }
 }
